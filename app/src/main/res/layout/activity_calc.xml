@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/calc_background"
+    tools:context=".CalcActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/calc_page_title"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.1"
+        android:textColor="@color/calc_primary_color"
+        android:layout_marginVertical="10dp"/>
+
+    <TextView
+        android:id="@+id/calc_tv_history"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="15dp"
+        android:textAlignment="textEnd"
+        android:textSize="18sp"
+        android:textColor="@color/calc_secondary_color"
+        tools:text="25 - 8 ="/>
+
+    <TextView
+        android:id="@+id/calc_tv_result"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="15dp"
+        android:textAlignment="textEnd"
+        android:textSize="52sp"
+        android:textStyle="bold"
+        android:textColor="@color/calc_primary_color"
+        tools:text="17"/>
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+            <Button
+                android:text="%"
+                android:background="@drawable/calc_oper_btn_shape"
+                app:backgroundTint="@null" />
+            <Button
+                android:text="%"
+                android:background="@drawable/calc_oper_btn_shape"
+                app:backgroundTint="@null" />
+            <Button
+                android:text="%"
+                android:background="@drawable/calc_oper_btn_shape"
+                app:backgroundTint="@null" />
+            <Button
+                android:text="%"
+                android:background="@drawable/calc_oper_btn_shape"
+                app:backgroundTint="@null" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </TableLayout>
+
+</LinearLayout>

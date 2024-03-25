@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Android-111</string>
+
+    <!-- MAIN ACTIVITY -->
+    <string name="main_page_title">Знайомство з Андроїд</string>
+    <string name="main_calc_button">Калькулятор</string>
+
+    <!-- CALC ACTIVITY -->
+    <string name="calc_page_title">Калькулятор</string>
+
+</resources>
