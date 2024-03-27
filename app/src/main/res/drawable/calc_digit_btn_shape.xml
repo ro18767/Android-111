@@ -6,6 +6,6 @@
         android:radius="7dp"/>
 
     <solid
-        android:color="@color/calc_operation_button_color"/>
+        android:color="@color/calc_digit_button_color"/>
 
 </shape>
