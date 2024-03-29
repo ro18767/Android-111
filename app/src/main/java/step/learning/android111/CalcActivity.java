@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -16,6 +17,8 @@ import androidx.core.view.WindowInsetsCompat;
 public class CalcActivity extends AppCompatActivity {
     private TextView tvHistory;
     private TextView tvResult;
+    private final static int MAX_DIGITS = 10 ;
+    private boolean needClear = false;
 
     @SuppressLint("DiscouragedApi")
     @Override
@@ -50,15 +53,43 @@ public class CalcActivity extends AppCompatActivity {
     }
 
     private void inverseClick( View view ) {
+        needClear = true ;
         String result = tvResult.getText().toString();
-        double x = Double.parseDouble( result ) ;
+        double x ;
+        try {
+            x = Double.parseDouble(result.replaceAll(
+                    getString(R.string.calc_btn_0), "0"));
+        }
+        catch (Exception ignore) {
+            return;
+        }
+        if( x == 0.0 ) {
+            tvResult.setText( R.string.calc_zero_division ) ;
+            Toast.makeText(this, R.string.calc_zero_division_toast, Toast.LENGTH_SHORT).show();
+            return;
+        }
         x = 1.0 / x ;
-        tvResult.setText( String.valueOf(x) ) ;
+        String res = x == (int)x ? String.valueOf( (int)x ) : String.valueOf( x ) ;
+        if( res.length() > MAX_DIGITS ) {
+            res = res.substring(0, MAX_DIGITS);
+        }
+        res = res.replaceAll("0", getString(R.string.calc_btn_0) ) ;
+        tvResult.setText( res ) ;
+        res = "1 / " + result + " =" ;
+        tvHistory.setText( res ) ;
     }
 
     private void digitClick( View view ) {
-        String result = tvResult.getText().toString();
-        if(result.length() >= 10) {
+        String result;
+        if(needClear) {
+            result = getString( R.string.calc_btn_0 );
+            tvHistory.setText("");
+            needClear = false ;
+        }
+        else {
+            result = tvResult.getText().toString();
+        }
+        if(result.length() >= MAX_DIGITS) {
             return;
         }
         if( result.equals( getString( R.string.calc_btn_0 ) ) ) {
@@ -80,16 +111,19 @@ public class CalcActivity extends AppCompatActivity {
         // Bundle outState ---> Bundle savedInstanceState
         super.onSaveInstanceState(outState);
         outState.putCharSequence( "savedResult", tvResult.getText() );
+        // забезпечити збереження історії та needClear
+        outState.putBoolean("needClear", needClear);
     }
 
     @Override  // активність відновлюється, відтворюємо дані
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         tvResult.setText( savedInstanceState.getCharSequence( "savedResult" ) );
+        needClear = savedInstanceState.getBoolean("needClear");
     }
 }
 /*
-Д.З. Для гри "хрестики-нолики" реалізувати динаміку:
-за натисканням елементів змінюється їх контент, якщо вони порожні.
-Забезпечити послідовність ходів (чергування Х та 0)
+Д.З. Для гри "хрестики-нолики" реалізувати дизайн для ландшафтної
+орієнтації пристрою, забезпечити збереження та відновлення
+ігрової ситуації при зміні орієнтації.
  */

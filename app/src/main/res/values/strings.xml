@@ -21,7 +21,8 @@
     <string name="calc_btn_pm">\u00B1</string>
     <string name="calc_btn_comma">,</string>
     <string name="calc_btn_equal">\uFF1D</string>
-
+    <string name="calc_zero_division">DIV BY 0</string>
+    <string name="calc_zero_division_toast">Division by zero</string>
     <string name="calc_btn_0">\uA668</string>
     <string name="calc_btn_1">1</string>
     <string name="calc_btn_2">2</string>
