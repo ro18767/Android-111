@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -43,8 +44,16 @@ public class CalcActivity extends AppCompatActivity {
         tvResult  = findViewById( R.id.calc_tv_result  );
 
         findViewById( R.id.calc_btn_c ).setOnClickListener( this::cClick );
+        findViewById( R.id.calc_btn_inverse ).setOnClickListener( this::inverseClick );
 
         cClick(null);
+    }
+
+    private void inverseClick( View view ) {
+        String result = tvResult.getText().toString();
+        double x = Double.parseDouble( result ) ;
+        x = 1.0 / x ;
+        tvResult.setText( String.valueOf(x) ) ;
     }
 
     private void digitClick( View view ) {
@@ -62,6 +71,21 @@ public class CalcActivity extends AppCompatActivity {
     private void cClick( View view ) {
         tvHistory.setText("");
         tvResult.setText( R.string.calc_btn_0 );
+    }
+
+    // Події, що відповідають за зміну конфігурації
+
+    @Override   // onSaveInstanceState - активність руйнується, дані слід зберігати
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        // Bundle outState ---> Bundle savedInstanceState
+        super.onSaveInstanceState(outState);
+        outState.putCharSequence( "savedResult", tvResult.getText() );
+    }
+
+    @Override  // активність відновлюється, відтворюємо дані
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        tvResult.setText( savedInstanceState.getCharSequence( "savedResult" ) );
     }
 }
 /*
