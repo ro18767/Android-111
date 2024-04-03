@@ -21,9 +21,10 @@ import androidx.core.view.WindowInsetsCompat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 public class GameActivity extends AppCompatActivity {
-
+    private static final Random random = new Random();
     private int fieldWidth = 15;
     private int fieldHeight = 28;
     private long period = 500;
@@ -31,6 +32,8 @@ public class GameActivity extends AppCompatActivity {
     private Handler handler;
     private final LinkedList<Vector2> snake = new LinkedList<>() ;
     private final Vector2 food = new Vector2(5,5);
+    private Direction moveDirection;
+
     private int  cellColorRes;
     private int fieldColorRes;
     private int snakeColorRes;
@@ -52,19 +55,27 @@ public class GameActivity extends AppCompatActivity {
                 new OnSwipeListener(getApplicationContext()) {
                     @Override
                     public void onSwipeBottom() {
-                        Toast.makeText(GameActivity.this, "onSwipeBottom", Toast.LENGTH_SHORT).show();
+                        if(moveDirection == Direction.left || moveDirection == Direction.right) {
+                            moveDirection = Direction.bottom;
+                        }
                     }
                     @Override
                     public void onSwipeLeft() {
-                        Toast.makeText(GameActivity.this, "onSwipeLeft", Toast.LENGTH_SHORT).show();
+                        if(moveDirection == Direction.top || moveDirection == Direction.bottom) {
+                            moveDirection = Direction.left;
+                        }
                     }
                     @Override
                     public void onSwipeRight() {
-                        Toast.makeText(GameActivity.this, "onSwipeRight", Toast.LENGTH_SHORT).show();
+                        if(moveDirection == Direction.top || moveDirection == Direction.bottom) {
+                            moveDirection = Direction.right;
+                        }
                     }
                     @Override
                     public void onSwipeTop() {
-                        Toast.makeText(GameActivity.this, "onSwipeTop", Toast.LENGTH_SHORT).show();
+                        if(moveDirection == Direction.left || moveDirection == Direction.right) {
+                            moveDirection = Direction.top;
+                        }
                     }
                 });
         cellColorRes  = getResources().getColor( R.color.game_cell, getTheme() ) ;
@@ -81,13 +92,28 @@ public class GameActivity extends AppCompatActivity {
         Vector2 newHead = snake.getFirst().copy();
 
         // перераховуємо нову позицію голови в залежності від напряму руху
-        newHead.setY( newHead.getY() - 1 ) ;
+        switch (moveDirection){
+            case top:    newHead.setY( newHead.getY() - 1 ) ; break;
+            case bottom: newHead.setY( newHead.getY() + 1 ) ; break;
+            case left:   newHead.setX( newHead.getX() - 1 ) ; break;
+            case right:  newHead.setX( newHead.getX() + 1 ) ; break;
+        }
+        // перевіряємо, що не вийшли за межі поля
+
+
+        // вставляємо нову голову
+        snake.addFirst( newHead );
+        // та зарисовуємо комірку поля
+        cells[newHead.getX()][newHead.getY()].setBackgroundColor( snakeColorRes );
 
         // перевіряємо що нова позиція - це їжа
         if(newHead.getX() == food.getX() && newHead.getY() == food.getY()) {
             cells[food.getX()][food.getY()].setText("");
-            food.setX(10);
-            food.setY(10);
+            do {   // перегенеровуємо позицію їжі
+                food.setX( random.nextInt( fieldWidth ) );
+                food.setY( random.nextInt( fieldHeight ) ) ;
+            } while( isInSnake(food) );
+
             cells[food.getX()][food.getY()].setText(foodSymbol);
         }
         else {
@@ -95,11 +121,6 @@ public class GameActivity extends AppCompatActivity {
             // стираємо старий хвіст - зафарбовуємо у колір комірки
             cells[tail.getX()][tail.getY()].setBackgroundColor( cellColorRes );
         }
-
-        // вставляємо нову голову
-        snake.addFirst( newHead );
-        // та зарисовуємо комірку поля
-        cells[newHead.getX()][newHead.getY()].setBackgroundColor( snakeColorRes );
 
         if(isPlaying) {
             handler.postDelayed(this::update, period);
@@ -118,6 +139,7 @@ public class GameActivity extends AppCompatActivity {
             cells[tail.getX()][tail.getY()].setBackgroundColor( snakeColorRes ) ;
         }
         isPlaying = true;
+        moveDirection = Direction.top;
         handler.postDelayed( this::update, period ) ;
     }
     private void initField() {
@@ -151,7 +173,9 @@ public class GameActivity extends AppCompatActivity {
             gameField.addView(row);
         }
     }
-
+    private boolean isInSnake(Vector2 vector) {
+        return snake.stream().anyMatch(v -> v.getX() == vector.getX() && v.getY() == vector.getY());
+    }
     @Override
     protected void onPause() {
         super.onPause();
@@ -196,8 +220,15 @@ public class GameActivity extends AppCompatActivity {
             this.y = y;
         }
     }
+
+    enum Direction {
+        left,
+        right,
+        top,
+        bottom
+    }
 }
 /*
-Д.З. Реалізувати у грі "хрестики-нолики" скасування останнього ходу
-за допомогою жесту "свайп ліворуч"
+Д.З. Реалізувати у грі "хрестики-нолики" відображення часу, витраченного кожним з гравців
+(ввести два годинники на UI)
  */
