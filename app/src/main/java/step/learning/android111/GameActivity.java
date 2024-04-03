@@ -1,6 +1,11 @@
 package step.learning.android111;
 
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -13,11 +18,25 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 public class GameActivity extends AppCompatActivity {
 
     private int fieldWidth = 15;
     private int fieldHeight = 28;
+    private long period = 500;
     private TextView[][] cells;
+    private Handler handler;
+    private final LinkedList<Vector2> snake = new LinkedList<>() ;
+    private final Vector2 food = new Vector2(5,5);
+    private int  cellColorRes;
+    private int fieldColorRes;
+    private int snakeColorRes;
+    private int  foodColorRes;
+    private String foodSymbol = new String( Character.toChars(0x1f34e) );
+    private boolean isPlaying;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,20 +67,64 @@ public class GameActivity extends AppCompatActivity {
                         Toast.makeText(GameActivity.this, "onSwipeTop", Toast.LENGTH_SHORT).show();
                     }
                 });
+        cellColorRes  = getResources().getColor( R.color.game_cell, getTheme() ) ;
+        fieldColorRes = getResources().getColor( R.color.game_background, getTheme() ) ;
+        snakeColorRes = getResources().getColor( R.color.game_snake, getTheme() ) ;
+        foodColorRes  = getResources().getColor( R.color.game_food, getTheme() ) ;
+
+        handler = new Handler();
         initField();
         startGame();
     }
 
+    private void update() {
+        Vector2 newHead = snake.getFirst().copy();
+
+        // перераховуємо нову позицію голови в залежності від напряму руху
+        newHead.setY( newHead.getY() - 1 ) ;
+
+        // перевіряємо що нова позиція - це їжа
+        if(newHead.getX() == food.getX() && newHead.getY() == food.getY()) {
+            cells[food.getX()][food.getY()].setText("");
+            food.setX(10);
+            food.setY(10);
+            cells[food.getX()][food.getY()].setText(foodSymbol);
+        }
+        else {
+            Vector2 tail = snake.removeLast();
+            // стираємо старий хвіст - зафарбовуємо у колір комірки
+            cells[tail.getX()][tail.getY()].setBackgroundColor( cellColorRes );
+        }
+
+        // вставляємо нову голову
+        snake.addFirst( newHead );
+        // та зарисовуємо комірку поля
+        cells[newHead.getX()][newHead.getY()].setBackgroundColor( snakeColorRes );
+
+        if(isPlaying) {
+            handler.postDelayed(this::update, period);
+        }
+    }
+
     private void startGame() {
-        cells[5][5].setText("A");
-        cells[5][5].setBackgroundColor(
-                getResources().getColor(
-                        R.color.main_calc_button, getTheme()));
+        cells[food.getX()][food.getY()].setText(foodSymbol);
+        // cells[5][5].setBackgroundColor( foodColorRes ) ;
+
+        snake.clear();
+        snake.add( new Vector2(5, 15 ) ) ;
+        snake.add( new Vector2(5, 16 ) ) ;
+        snake.add( new Vector2(5, 17 ) ) ;
+        for( Vector2 tail : snake ) {
+            cells[tail.getX()][tail.getY()].setBackgroundColor( snakeColorRes ) ;
+        }
+        isPlaying = true;
+        handler.postDelayed( this::update, period ) ;
     }
     private void initField() {
         cells = new TextView[fieldWidth][fieldHeight];
 
         TableLayout gameField = findViewById( R.id.game_field );
+        gameField.setBackgroundColor( fieldColorRes ) ;
 
         TableLayout.LayoutParams rowLayoutParams = new TableLayout.LayoutParams();
         rowLayoutParams.weight = 1;
@@ -78,16 +141,59 @@ public class GameActivity extends AppCompatActivity {
             row.setLayoutParams( rowLayoutParams );
             for (int i = 0; i < fieldWidth; i++) {
                 TextView textView = new TextView(getApplicationContext());
-                textView.setBackgroundColor(
-                        getResources().getColor(
-                                R.color.calc_equal_button_color, getTheme()));
-                //textView.setText(R.string.calc_btn_0);
+                textView.setBackgroundColor( cellColorRes );
+                textView.setGravity(Gravity.CENTER);
                 textView.setLayoutParams(layoutParams);
                 textView.setWidth(0);
                 row.addView(textView);
                 cells[i][j] = textView;
             }
             gameField.addView(row);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Log.d("snakeActivity", "onPause");
+        isPlaying = false;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Log.d("snakeActivity", "onResume");
+        isPlaying = true;
+    }
+
+
+    static class Vector2 {
+        int x;
+        int y;
+
+        public Vector2 copy() {
+            return new Vector2(x,y);
+        }
+
+        public Vector2(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public void setX(int x) {
+            this.x = x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        public void setY(int y) {
+            this.y = y;
         }
     }
 }

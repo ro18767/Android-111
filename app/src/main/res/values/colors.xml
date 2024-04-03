@@ -14,4 +14,10 @@
     <color name="calc_operation_button_color">#323232</color>
     <color name="calc_equal_button_color">#4CC1FE</color>
 
+    <!-- GAME -->
+    <color name="game_background">#636363</color>
+    <color name="game_cell">#AFAFAF</color>
+    <color name="game_snake">#1D9519</color>
+    <color name="game_food">#CC5430</color>
+
 </resources>
