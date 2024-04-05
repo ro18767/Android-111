@@ -6,7 +6,7 @@
     <string name="main_calc_button">Калькулятор</string>
     <string name="main_game_button">Свайпи. Гра</string>
 
-    <!-- CALC ACTIVITY -->
+    <!-- region CALC ACTIVITY -->
     <string name="calc_page_title">Калькулятор</string>
     <string name="calc_btn_percent">%</string>
     <string name="calc_btn_ce">CE</string>
@@ -34,4 +34,11 @@
     <string name="calc_btn_7">7</string>
     <string name="calc_btn_8">8</string>
     <string name="calc_btn_9">9</string>
+    <!-- endregion -->
+
+    <!-- GAME -->
+    <string name="game_final_title">Гру завершено</string>
+    <string name="game_final_message">Бажаєте зіграти ще раз?</string>
+    <string name="game_final_positive">Повторити</string>
+    <string name="game_final_negative">Вийти</string>
 </resources>

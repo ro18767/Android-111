@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -31,7 +32,7 @@ public class GameActivity extends AppCompatActivity {
     private TextView[][] cells;
     private Handler handler;
     private final LinkedList<Vector2> snake = new LinkedList<>() ;
-    private final Vector2 food = new Vector2(5,5);
+    private Vector2 food ;
     private Direction moveDirection;
 
     private int  cellColorRes;
@@ -99,7 +100,11 @@ public class GameActivity extends AppCompatActivity {
             case right:  newHead.setX( newHead.getX() + 1 ) ; break;
         }
         // перевіряємо, що не вийшли за межі поля
-
+        if( newHead.getX() < 0 || newHead.getX() >= fieldWidth
+         || newHead.getY() < 0 || newHead.getY() >= fieldHeight ) {
+            gameOver();
+            return;
+        }
 
         // вставляємо нову голову
         snake.addFirst( newHead );
@@ -128,9 +133,16 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void startGame() {
+        // стираємо залишкові асети
+        if(food != null) {
+            cells[food.getX()][food.getY()].setText("");
+        }
+        for( Vector2 tail : snake ) {
+            cells[tail.getX()][tail.getY()].setBackgroundColor( cellColorRes ) ;
+        }
+        // Відновлюємо стартову позицію
+        food = new Vector2(5,5);
         cells[food.getX()][food.getY()].setText(foodSymbol);
-        // cells[5][5].setBackgroundColor( foodColorRes ) ;
-
         snake.clear();
         snake.add( new Vector2(5, 15 ) ) ;
         snake.add( new Vector2(5, 16 ) ) ;
@@ -139,7 +151,7 @@ public class GameActivity extends AppCompatActivity {
             cells[tail.getX()][tail.getY()].setBackgroundColor( snakeColorRes ) ;
         }
         isPlaying = true;
-        moveDirection = Direction.top;
+        moveDirection = Direction.left;
         handler.postDelayed( this::update, period ) ;
     }
     private void initField() {
@@ -175,6 +187,19 @@ public class GameActivity extends AppCompatActivity {
     }
     private boolean isInSnake(Vector2 vector) {
         return snake.stream().anyMatch(v -> v.getX() == vector.getX() && v.getY() == vector.getY());
+    }
+    private void gameOver() {
+        new AlertDialog.Builder(   // формування модального діалогу за паттерном "Builder"
+                GameActivity.this,
+                androidx.appcompat.R.style.Theme_AppCompat_Dialog_Alert   // Widget_AppCompat_ButtonBar_AlertDialog
+                )
+                .setTitle(R.string.game_final_title)
+                .setMessage(R.string.game_final_message)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setCancelable(false)   // неможна закрити без натиску кнопки
+                .setPositiveButton(R.string.game_final_positive, (dialog, buttonIndex) -> startGame())
+                .setNegativeButton(R.string.game_final_negative, (dialog, buttonIndex) -> finish())
+                .show();
     }
     @Override
     protected void onPause() {
