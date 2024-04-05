@@ -41,4 +41,10 @@
     <string name="game_final_message">Бажаєте зіграти ще раз?</string>
     <string name="game_final_positive">Повторити</string>
     <string name="game_final_negative">Вийти</string>
+    <string name="game_time">TIME:</string>
+    <string name="game_time_best">BEST:</string>
+    <string name="game_score">SCORE:</string>
+    <string name="game_score_best">BEST:</string>
+    <string name="game_time_template">%d c</string>
+
 </resources>

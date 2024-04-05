@@ -25,8 +25,9 @@
             android:orientation="vertical">
             <TextView
                 style="@style/game_labels"
-                android:text="TIME:" />
+                android:text="@string/game_time" />
             <TextView
+                android:id="@+id/game_tv_time"
                 style="@style/game_labels"
                 tools:text="300 c" />
         </LinearLayout>
@@ -38,8 +39,9 @@
             android:orientation="vertical">
             <TextView
                 style="@style/game_labels"
-                android:text="BEST:" />
+                android:text="@string/game_time_best" />
             <TextView
+                android:id="@+id/game_tv_best_time"
                 style="@style/game_labels"
                 tools:text="500 c" />
         </LinearLayout>
@@ -57,8 +59,9 @@
             android:orientation="vertical">
             <TextView
                 style="@style/game_labels"
-                android:text="SCORE:" />
+                android:text="@string/game_score" />
             <TextView
+                android:id="@+id/game_tv_score"
                 style="@style/game_labels"
                 tools:text="100500" />
         </LinearLayout>
@@ -70,8 +73,9 @@
             android:orientation="vertical">
             <TextView
                 style="@style/game_labels"
-                android:text="BEST:" />
+                android:text="@string/game_score_best" />
             <TextView
+                android:id="@+id/game_tv_best_score"
                 style="@style/game_labels"
                 tools:text="100500" />
         </LinearLayout>

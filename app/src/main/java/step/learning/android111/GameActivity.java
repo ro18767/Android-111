@@ -41,6 +41,8 @@ public class GameActivity extends AppCompatActivity {
     private int  foodColorRes;
     private String foodSymbol = new String( Character.toChars(0x1f34e) );
     private boolean isPlaying;
+    private float time, bestTime, score, bestScore;
+    private TextView tvTime, tvBestTime, tvScore, tvBestScore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +86,11 @@ public class GameActivity extends AppCompatActivity {
         snakeColorRes = getResources().getColor( R.color.game_snake, getTheme() ) ;
         foodColorRes  = getResources().getColor( R.color.game_food, getTheme() ) ;
 
+        tvTime = findViewById( R.id.game_tv_time );
+        tvBestTime = findViewById( R.id.game_tv_best_time );
+        tvScore = findViewById( R.id.game_tv_score );
+        tvBestScore = findViewById( R.id.game_tv_best_score );
+
         handler = new Handler();
         initField();
         startGame();
@@ -120,18 +127,22 @@ public class GameActivity extends AppCompatActivity {
             } while( isInSnake(food) );
 
             cells[food.getX()][food.getY()].setText(foodSymbol);
+            score += 100;
         }
         else {
             Vector2 tail = snake.removeLast();
             // стираємо старий хвіст - зафарбовуємо у колір комірки
             cells[tail.getX()][tail.getY()].setBackgroundColor( cellColorRes );
+            score += 1;
         }
-
+        time += (float)period / 1000;
         if(isPlaying) {
             handler.postDelayed(this::update, period);
         }
     }
+    private void updateLabels() {
 
+    }
     private void startGame() {
         // стираємо залишкові асети
         if(food != null) {
