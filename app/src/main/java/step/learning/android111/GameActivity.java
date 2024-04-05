@@ -1,5 +1,6 @@
 package step.learning.android111;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -19,6 +20,12 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,7 +50,7 @@ public class GameActivity extends AppCompatActivity {
     private boolean isPlaying;
     private float time, bestTime, score, bestScore;
     private TextView tvTime, tvBestTime, tvScore, tvBestScore;
-
+    private final String gameDataFilename = "saves.game";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,7 +102,35 @@ public class GameActivity extends AppCompatActivity {
         initField();
         startGame();
     }
-
+    private void loadGameData() {
+        try( FileInputStream fis = openFileInput( gameDataFilename ) ) {
+            DataInputStream reader = new DataInputStream( fis ) ;
+            bestScore = reader.readFloat() ;
+            bestTime = reader.readFloat() ;
+            reader.close();
+            updateLabels(true);
+            Log.i("loadGameData", "Loaded " + bestScore + " " + bestTime ) ;
+        }
+        catch (IOException e) {
+            Log.e("loadGameData", e.getMessage() ) ;
+        }
+    }
+    private void saveGameData() {
+        /* Файлова система Андроїд "видає" кожному застосунку приватну директорію.
+        *  Доступ до неї для програми не обмежений, але можна її видаляти з налаштувань
+        *  пристрою. Доступ для інших програм - тільки з правами адміністратора */
+        try( FileOutputStream fos = openFileOutput( gameDataFilename, Context.MODE_PRIVATE ) ) {
+            DataOutputStream writer = new DataOutputStream( fos ) ;
+            writer.writeFloat( bestScore );
+            writer.writeFloat( bestTime );
+            writer.flush();
+            writer.close();
+            Log.i("saveGameData", "Saved " + bestScore + " " + bestTime ) ;
+        }
+        catch (IOException e) {
+            Log.e("saveGameData", e.getMessage() ) ;
+        }
+    }
     private void update() {
         Vector2 newHead = snake.getFirst().copy();
 
@@ -136,14 +171,29 @@ public class GameActivity extends AppCompatActivity {
             score += 1;
         }
         time += (float)period / 1000;
+        updateLabels(false);
         if(isPlaying) {
             handler.postDelayed(this::update, period);
         }
     }
-    private void updateLabels() {
-
+    private void updateLabels(boolean forceUpdate) {
+        tvScore.setText( String.valueOf( (int)score ) );
+        tvTime.setText( getString( R.string.game_time_template, (int)time ) ) ;
+        if( time > bestTime ) {
+            bestTime = time ;
+            forceUpdate = true;
+        }
+        if( score > bestScore ) {
+            bestScore = score;
+            forceUpdate = true;
+        }
+        if( forceUpdate ) {
+            tvBestTime.setText( getString( R.string.game_time_template, (int)bestTime ) ) ;
+            tvBestScore.setText( String.valueOf( (int)bestScore ) );
+        }
     }
     private void startGame() {
+        loadGameData();
         // стираємо залишкові асети
         if(food != null) {
             cells[food.getX()][food.getY()].setText("");
@@ -217,6 +267,7 @@ public class GameActivity extends AppCompatActivity {
         super.onPause();
         // Log.d("snakeActivity", "onPause");
         isPlaying = false;
+        saveGameData();
     }
 
     @Override
@@ -265,6 +316,10 @@ public class GameActivity extends AppCompatActivity {
     }
 }
 /*
-Д.З. Реалізувати у грі "хрестики-нолики" відображення часу, витраченного кожним з гравців
-(ввести два годинники на UI)
+Д.З. Реалізувати у грі "хрестики-нолики"
+повідомлення (Alert Dialogs) про переможців та про продовження гри
+якщо активність стає на паузу, то зберігати поточний стан гри,
+а при відновленні активності - повертати його.
+Якщо стартує нова гра при наявності збереженої старої, то видавати
+повідомлення: продовжити стару / почати нову.
  */
