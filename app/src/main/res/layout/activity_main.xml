@@ -19,6 +19,19 @@
         app:layout_constraintVertical_bias="0.1" />
 
     <Button
+        android:id="@+id/main_button_game_tic_tac_toe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/main_btn_shape"
+        android:text="@string/main_game_tic_tac_toe_button"
+        app:backgroundTint="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/main_tv_title"
+        app:layout_constraintVertical_bias="0.2" />
+
+    <Button
         android:id="@+id/main_button_calc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -29,7 +42,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/main_tv_title"
-        app:layout_constraintVertical_bias="0.278" />
+        app:layout_constraintVertical_bias="0.4" />
 
     <Button
         android:id="@+id/main_button_game"
@@ -42,6 +55,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/main_tv_title"
-        app:layout_constraintVertical_bias="0.548" />
+        app:layout_constraintVertical_bias="0.6" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

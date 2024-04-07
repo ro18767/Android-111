@@ -22,12 +22,20 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        findViewById( R.id.main_button_game_tic_tac_toe )
+                .setOnClickListener( this::onGameTicTacToeButtonClick ) ;
         findViewById( R.id.main_button_calc )
                 .setOnClickListener( this::onCalcButtonClick ) ;
         findViewById( R.id.main_button_game )
                 .setOnClickListener( this::onGameButtonClick ) ;
     }
 
+    private void onGameTicTacToeButtonClick( View view ) {
+        Intent intent = new Intent(
+                this.getApplicationContext(),
+                GameTicTacToeActivity.class ) ;
+        startActivity( intent ) ;
+    }
     private void onCalcButtonClick( View view ) {
         Intent intent = new Intent(
                 this.getApplicationContext(),
