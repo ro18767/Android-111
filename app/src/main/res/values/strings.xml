@@ -6,6 +6,7 @@
     <string name="main_calc_button">Калькулятор</string>
     <string name="main_game_button">Свайпи. Гра</string>
     <string name="main_rates_button">Інтернет. Курси валют</string>
+    <string name="main_chat_button">Обмін даними. Чат</string>
 
     <!-- region CALC ACTIVITY -->
     <string name="calc_page_title">Калькулятор</string>
@@ -47,5 +48,8 @@
     <string name="game_score">SCORE:</string>
     <string name="game_score_best">BEST:</string>
     <string name="game_time_template">%d c</string>
+
+    <!-- CHAT -->
+    <string name="chat_name_label">Ім'я</string>
 
 </resources>
