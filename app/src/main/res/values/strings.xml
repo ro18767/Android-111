@@ -50,6 +50,6 @@
     <string name="game_time_template">%d c</string>
 
     <!-- CHAT -->
-    <string name="chat_name_label">Ім'я</string>
+    <string name="chat_name_label">Ім\'я</string>
 
 </resources>
