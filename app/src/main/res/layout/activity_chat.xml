@@ -33,7 +33,8 @@
             android:id="@+id/chat_et_name"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="DNS" />
 
         <ImageView
             android:layout_width="wrap_content"
@@ -72,7 +73,8 @@
             android:id="@+id/chat_et_message"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:text="Hello" />
 
         <ImageButton
             android:id="@+id/chat_btn_send"

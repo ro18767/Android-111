@@ -14,6 +14,8 @@ public class ChatMessage {
     private String text;
     private Date moment;
 
+    private Object tag;   // for user proposes
+
     private static final SimpleDateFormat sqlFormat =
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
 
@@ -35,6 +37,14 @@ public class ChatMessage {
     }
 
     public ChatMessage() {
+    }
+
+    public Object getTag() {
+        return tag;
+    }
+
+    public void setTag(Object tag) {
+        this.tag = tag;
     }
 
     public String getId() {
