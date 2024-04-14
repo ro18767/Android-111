@@ -11,9 +11,9 @@
 
 
     <!-- game_tic_tac_toe  -->
-<!--    <string name="game_tic_tac_toe_player_1_move">O</string>-->
-<!--    <string name="game_tic_tac_toe_player_2_move">X</string>-->
-<!--    <string name="game_tic_tac_toe_no_move"></string>-->
+    <string name="game_tic_tac_toe_player_1_time">P1 T:</string>
+    <string name="game_tic_tac_toe_player_2_time">P2 T:</string>
+    <string name="game_tic_tac_toe_time_template">%d c</string>
 
     <!-- region CALC ACTIVITY -->
     <string name="calc_page_title">Калькулятор</string>

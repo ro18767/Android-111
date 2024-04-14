@@ -1,6 +1,7 @@
 package step.learning.android111;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +19,18 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class GameTicTacToeActivity extends AppCompatActivity {
 
+    private Handler handler;
+
+    private long period = 1000;
     private static final String p0 = "";
     private static final String p1 = "O";
     private static final String p2 = "X";
+    private static float p1Time = 0;
+    private static float p2Time = 0;
+
+    private static TextView tvP1Time;
+    private static TextView tvP2Time;
+
 
     private boolean player_1_move = true;
 
@@ -28,6 +38,9 @@ public class GameTicTacToeActivity extends AppCompatActivity {
     private int fieldHeight = 3;
 
     private Button[][] cells;
+
+    private Button lastMoveCell = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +53,50 @@ public class GameTicTacToeActivity extends AppCompatActivity {
             return insets;
         });
 
+        tvP1Time = findViewById( R.id.game_tic_tac_toe_player_1_time_tv );
+        tvP2Time = findViewById( R.id.game_tic_tac_toe_player_2_time_tv );
+
+        handler = new Handler();
+
         initField();
+
+        findViewById(R.id.main).setOnTouchListener(
+                new OnSwipeListener(getApplicationContext()) {
+                    @Override
+                    public void onSwipeLeft() {
+                        if (lastMoveCell == null) return;
+
+                        lastMoveCell.setText(p0);
+
+                        player_1_move = !player_1_move;
+
+
+                        lastMoveCell = null;
+                    }
+
+                });
+
+        handler.postDelayed( this::update, period ) ;
+    }
+
+    private void update() {
+
+
+        if (player_1_move) {
+            p1Time += (float) period / 1000;
+        } else {
+            p2Time += (float) period / 1000;
+        }
+
+        updateLabels(true);
+        handler.postDelayed(this::update, period);
+    }
+
+    private void updateLabels(boolean forceUpdate) {
+        if (!forceUpdate) return;
+
+        tvP1Time.setText(getString(R.string.game_time_template, (int) p1Time));
+        tvP2Time.setText(getString(R.string.game_time_template, (int) p2Time));
     }
 
     private void initField() {
@@ -74,6 +130,8 @@ public class GameTicTacToeActivity extends AppCompatActivity {
         } else {
             cell.setText(p2);
         }
+        lastMoveCell = cell;
+
         player_1_move = !player_1_move;
     }
 
@@ -107,5 +165,7 @@ public class GameTicTacToeActivity extends AppCompatActivity {
 
         player_1_move = savedInstanceState.getBoolean("player_1_move");
     }
+
+
 }
 
