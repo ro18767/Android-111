@@ -9,6 +9,12 @@
     <string name="main_rates_button">Інтернет. Курси валют</string>
     <string name="main_chat_button">Обмін даними. Чат</string>
 
+
+    <!-- game_tic_tac_toe  -->
+<!--    <string name="game_tic_tac_toe_player_1_move">O</string>-->
+<!--    <string name="game_tic_tac_toe_player_2_move">X</string>-->
+<!--    <string name="game_tic_tac_toe_no_move"></string>-->
+
     <!-- region CALC ACTIVITY -->
     <string name="calc_page_title">Калькулятор</string>
     <string name="calc_btn_percent">%</string>

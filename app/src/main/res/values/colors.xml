@@ -6,6 +6,12 @@
     <color name="main_calc_button">#15385E</color>
     <color name="main_calc_button_stroke">#255F9E</color>
 
+    <!-- game_tic_tac_toe -->
+    <color name="game_tic_tac_toe_background">#636363</color>
+    <color name="game_tic_tac_toe_cell">#AFAFAF</color>
+    <color name="game_tic_tac_toe_cross">#1D9519</color>
+    <color name="game_tic_tac_toe_circle">#CC5430</color>
+
     <!-- CALC -->
     <color name="calc_background">#202020</color>
     <color name="calc_primary_color">#FEFEFE</color>
