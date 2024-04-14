@@ -1,8 +1,12 @@
 package step.learning.android111;
 
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -28,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 import step.learning.android111.orm.NbuRate;
 
@@ -35,7 +40,9 @@ public class RatesActivity extends AppCompatActivity {
     private TextView tvContent;
     private LinearLayout ratesContainer;
     private static final byte[] buffer = new byte[2048];
-    private List<NbuRate> rates ;
+    private List<NbuRate> rates;
+
+    private final Random random = new Random();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,21 +84,47 @@ public class RatesActivity extends AppCompatActivity {
 
     private void showRates() {
         tvContent.setText( rates.get(0).getExchangeDate() );
+
         Drawable rateBg = AppCompatResources.getDrawable(
                 getApplicationContext(),
                 R.drawable.rate_bg
         );
+
+        Drawable rateBg2 = AppCompatResources.getDrawable(
+                getApplicationContext(),
+                R.drawable.rate_bg2
+        );
+
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         );
         layoutParams.setMargins(5, 10, 5, 10 );
 
+
+        LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        layoutParams2.setMargins(5, 10, 5, 10 );
+        layoutParams2.gravity = Gravity.RIGHT;
+
+
+
+
         for( NbuRate rate : rates ) {
+            boolean toLeft = random.nextBoolean();
+
             TextView tv = new TextView(this);
             tv.setText( rate.getTxt() );
-            tv.setBackground( rateBg );
-            tv.setLayoutParams(layoutParams);
+            if(toLeft) {
+                tv.setBackground( rateBg );
+                tv.setLayoutParams(layoutParams);
+            } else {
+                tv.setBackground( rateBg2 );
+                tv.setLayoutParams(layoutParams2);
+
+            }
             tv.setPadding(15, 7, 15, 7);
             tv.setTag( rate );   // Tag - поле для даних користувача (додаткових даних)
             tv.setOnClickListener( this::rateClick );
