@@ -17,10 +17,21 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+import step.learning.android111.orm.ChatMessage;
+import step.learning.android111.services.Http;
+
 public class GameTicTacToeActivity extends AppCompatActivity {
 
     private Handler handler;
 
+    private static final String CHAT_URL = "https://www.random.org/integers/?num=10&min=0&max=2&col=1&base=10&format=plain&rnd=new&num=2";
     private long period = 1000;
     private static final String p0 = "";
     private static final String p1 = "O";
@@ -31,6 +42,8 @@ public class GameTicTacToeActivity extends AppCompatActivity {
     private static TextView tvP1Time;
     private static TextView tvP2Time;
 
+    private static int netX = 0;
+    private static int netY = 0;
 
     private boolean player_1_move = true;
 
@@ -77,8 +90,32 @@ public class GameTicTacToeActivity extends AppCompatActivity {
                 });
 
         handler.postDelayed( this::update, period ) ;
+
+        new Thread(this::loadChatMessages).start();
     }
 
+    private void loadChatMessages() {
+        List<ChatMessage> messages = new ArrayList<>();
+        try {
+            String data = Http.getString( CHAT_URL );
+            Scanner scanner = new Scanner(data);
+            if(scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                netX = Integer.parseInt(line);
+            }
+            if(scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                netY = Integer.parseInt(line);
+            }
+            scanner.close();
+        }
+        catch (Exception ignore) {}
+        runOnUiThread( this::updateMessagesView );
+    }
+
+    private void updateMessagesView() {
+        cellClick(cells[netY][netX]);
+    }
     private void update() {
 
 
