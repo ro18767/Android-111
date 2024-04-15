@@ -1,15 +1,20 @@
 package step.learning.android111;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -23,8 +28,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import step.learning.android111.orm.ChatMessage;
 import step.learning.android111.services.Http;
@@ -33,8 +43,13 @@ public class ChatActivity extends AppCompatActivity {
     private final List<ChatMessage> chatMessages = new ArrayList<>();
     private static final String CHAT_URL = "https://chat.momentfor.fun/";
     private LinearLayout messagesContainer;
+    private ScrollView messagesScroller;
     private EditText etAuthor;
     private EditText etMessage;
+    private Drawable bgOwn, bgOther;
+    private final SimpleDateFormat datetimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.UK);
+    private final ExecutorService pool = Executors.newFixedThreadPool(3);
+    private final Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +63,18 @@ public class ChatActivity extends AppCompatActivity {
         });
         new Thread(this::loadChatMessages).start();
         messagesContainer = findViewById( R.id.chat_messages_container );
+        messagesScroller = findViewById( R.id.chat_messages_scroller ) ;
         findViewById(R.id.chat_btn_send).setOnClickListener( this::sendMessageClick );
         etAuthor = findViewById( R.id.chat_et_name );
         etMessage = findViewById( R.id.chat_et_message );
+        bgOwn = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.chat_bg_own);
+        bgOther = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.chat_bg_other);
     }
 
+    private void timer() {
+        pool.submit(this::loadChatMessages);
+        handler.postDelayed(this::timer, 3000);
+    }
     private void loadChatMessages() {
         List<ChatMessage> messages = new ArrayList<>();
         try {
@@ -65,6 +87,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
         catch (Exception ignore) {}
+        messages.sort( Comparator.comparing( ChatMessage::getMoment ) );
         boolean needUpdate = false;
         for(ChatMessage message : messages) {
             if(chatMessages.stream().noneMatch( m -> m.getId().equals( message.getId() )) ) {
@@ -80,14 +103,54 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void updateMessagesView() {
+        // будемо вважати власними ті повідомлення, у яких автор збігається з нашим полем
+        String author = etAuthor.getText().toString();
+
         for( ChatMessage message : chatMessages ) {
             if( message.getTag() == null ) {  // відсутність тегу - нове / ще не представлено
-                TextView tv = new TextView(this);
-                tv.setText(message.getText());
-                messagesContainer.addView(tv);
-                message.setTag(tv);   // як тег ставимо посилання на View даного повідомлення
+                boolean isOwn = author.equals( message.getAuthor() ) ;
+                View view = messageView(message, isOwn);
+                messagesContainer.addView(view);
+                message.setTag(view);   // як тег ставимо посилання на View даного повідомлення
             }
         }
+        // Прокрутка scroll view: формування контенту (відображення) відбувається
+        // асинхронно. Якщо подати команду скролінгу прямо,
+        // messagesScroller.fullScroll( View.FOCUS_DOWN ) ;
+        // то буде здійснено
+        // прокрутку до того місця, яке встигло прорисуватись. Дуже імовірно, що
+        // це не буде повним контентом.
+        // Такі команди подаються через канал повідомлень (подійний цикл)
+        messagesScroller.post( () -> messagesScroller.fullScroll( View.FOCUS_DOWN ) ) ;
+    }
+
+    private View messageView(ChatMessage message, boolean isOwn) {
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.gravity = isOwn ? Gravity.END : Gravity.START;
+        layoutParams.setMargins(10, 15, 10, 15);
+
+        LinearLayout linearLayout = new LinearLayout(this);
+        linearLayout.setLayoutParams(layoutParams);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        linearLayout.setBackground( isOwn ? bgOwn : bgOther );
+        linearLayout.setPadding(15, 5, 15, 5);
+
+        TextView textView = new TextView(this);
+        textView.setText( getString(
+                R.string.chat_message_line1,
+                datetimeFormat.format( message.getMoment() ),
+                message.getAuthor() ) );
+        linearLayout.addView( textView ) ;
+        textView = new TextView(this);
+        textView.setText( message.getText() ) ;
+        linearLayout.addView( textView );
+        return linearLayout ;
+        /*
+        12:34 Author
+        Text of the message
+         */
     }
 
     private void sendMessageClick(View view) {
@@ -98,6 +161,7 @@ public class ChatActivity extends AppCompatActivity {
         new Thread( () -> sendChatMessage(message) ).start();
 
     }
+
     private void sendChatMessage(ChatMessage message) {
         /*
         Бекенд чату приймає  нові повідомлення за схемою HTML-форми
@@ -151,6 +215,12 @@ public class ChatActivity extends AppCompatActivity {
         catch (Exception ex) {
             Log.e("sendChatMessage", "ex: " + ex.getClass().getName() + " " + ex.getMessage() );
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        pool.shutdownNow();
+        super.onDestroy();
     }
 }
 /*

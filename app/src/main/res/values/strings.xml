@@ -51,5 +51,6 @@
 
     <!-- CHAT -->
     <string name="chat_name_label">Ім\'я</string>
+    <string name="chat_message_line1">%s %s</string>
 
 </resources>
