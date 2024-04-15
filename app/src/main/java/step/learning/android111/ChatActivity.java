@@ -1,6 +1,7 @@
 package step.learning.android111;
 
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -50,6 +51,8 @@ public class ChatActivity extends AppCompatActivity {
     private final SimpleDateFormat datetimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.UK);
     private final ExecutorService pool = Executors.newFixedThreadPool(3);
     private final Handler handler = new Handler();
+    private MediaPlayer incomingMessage;
+    private String author = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +64,8 @@ public class ChatActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        new Thread(this::loadChatMessages).start();
+        // new Thread(this::loadChatMessages).start();
+        handler.post(this::timer);
         messagesContainer = findViewById( R.id.chat_messages_container );
         messagesScroller = findViewById( R.id.chat_messages_scroller ) ;
         findViewById(R.id.chat_btn_send).setOnClickListener( this::sendMessageClick );
@@ -69,10 +73,13 @@ public class ChatActivity extends AppCompatActivity {
         etMessage = findViewById( R.id.chat_et_message );
         bgOwn = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.chat_bg_own);
         bgOther = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.chat_bg_other);
+        incomingMessage = MediaPlayer.create(this, R.raw.income);
+        // incomingMessage.start();
     }
 
     private void timer() {
-        pool.submit(this::loadChatMessages);
+        try { pool.submit(this::loadChatMessages); }
+        catch (Exception ignored) { }
         handler.postDelayed(this::timer, 3000);
     }
     private void loadChatMessages() {
@@ -105,14 +112,19 @@ public class ChatActivity extends AppCompatActivity {
     private void updateMessagesView() {
         // будемо вважати власними ті повідомлення, у яких автор збігається з нашим полем
         String author = etAuthor.getText().toString();
-
+        boolean needSound = false;
+        boolean isFirst = messagesContainer.getChildCount() == 0;
         for( ChatMessage message : chatMessages ) {
             if( message.getTag() == null ) {  // відсутність тегу - нове / ще не представлено
                 boolean isOwn = author.equals( message.getAuthor() ) ;
+                needSound |=! isOwn;  // needSound = needSound || ! isOwn;
                 View view = messageView(message, isOwn);
                 messagesContainer.addView(view);
                 message.setTag(view);   // як тег ставимо посилання на View даного повідомлення
             }
+        }
+        if(needSound && !isFirst) {
+            incomingMessage.start();
         }
         // Прокрутка scroll view: формування контенту (відображення) відбувається
         // асинхронно. Якщо подати команду скролінгу прямо,
@@ -154,9 +166,25 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void sendMessageClick(View view) {
+        if(author == null) {  // перше надсилання - зберігаємо дані про автора та блокуємо зміни
+            author = etAuthor.getText().toString();
+            if(author.isEmpty()) {
+                Toast.makeText(this, R.string.chat_no_author_alert, Toast.LENGTH_SHORT).show();
+                author = null;
+                return;
+            }
+            else {
+                etAuthor.setEnabled(false);
+            }
+        }
+        String msg = etMessage.getText().toString();
+        if(msg.isEmpty()) {
+            Toast.makeText(this, R.string.chat_no_message_alert, Toast.LENGTH_SHORT).show();
+            return;
+        }
         ChatMessage message = new ChatMessage();
-        message.setAuthor( etAuthor.getText().toString() );
-        message.setText( etMessage.getText().toString() );
+        message.setAuthor( author );
+        message.setText( msg );
 
         new Thread( () -> sendChatMessage(message) ).start();
 
@@ -199,8 +227,10 @@ public class ChatActivity extends AppCompatActivity {
             int statusCode = connection.getResponseCode();
             if( statusCode == 201 ) {  // успішно доставлено (тіла немає)
                 loadChatMessages();    // запускаємо зчитування та оновлення чату
-                runOnUiThread( () ->
-                        Toast.makeText(this, "Sent", Toast.LENGTH_SHORT).show() );
+                runOnUiThread( () -> {
+                    Toast.makeText(this, "Sent", Toast.LENGTH_SHORT).show();
+                    etMessage.setText("");
+                });
             }
             else {  // помилка, деталі у тілі
                 InputStream connectionInput = connection.getErrorStream();
@@ -219,13 +249,23 @@ public class ChatActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
         pool.shutdownNow();
         super.onDestroy();
     }
 }
 /*
-Д.З.(хрестики або ноліки) Реалізувати надсилання повідомлення про виграш
-у чат. Після виграшу з'являється (серед іншого) кнопка "поділитись",
-натиск на яку надсилає до чату повідомлення "Я виграв у ХО"
-* та переходить на активність чату
+Звуки: зберігаються у спеціальній ресурсній директорії raw
+Як і для всіх ресурсів є вимоги до імен файлів: тільки маленькі літери, через "_"
+(З імені файлу будується ідентифікатор)
+Задача: програвати звук якщо є нові повідомлення, але не свої
+При надсиланні першого повідомлення поле з іменем автора блокується і не дозволяє зміни
+* а також зберігається у файлі і з наступним запуском підставляється з нього.
+Забезпечити перевірку на порожні повідомлення/авторство -- видавати попередження, дані не надсилати
+ */
+/*
+Д.З.(хрестики або ноліки) Реалізувати звукове оформлення
+- звуки натиснення (різні для різних знаків)
+- звуки скасування ходу
+- звук виграшу
  */

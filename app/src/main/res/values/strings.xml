@@ -52,5 +52,7 @@
     <!-- CHAT -->
     <string name="chat_name_label">Ім\'я</string>
     <string name="chat_message_line1">%s %s</string>
+    <string name="chat_no_author_alert">Заповніть поле \'Автор\'</string>
+    <string name="chat_no_message_alert">Введіть повідомлення</string>
 
 </resources>
