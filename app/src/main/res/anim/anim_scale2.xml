@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scale xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromXScale="1"
+    android:fromYScale="1"
+    android:toXScale="1.5"
+    android:toYScale="1.5"
+    android:duration="800"
+    android:pivotX="50%"
+    android:pivotY="50%"
+    android:repeatMode="restart"
+    android:repeatCount="3"
+    />
+<!--
+Для анімації масштабу також є нерухома точка
+Для плавного повернення додаємо атрибути repeatMode та repeatCount
+якщо repeatMode="reverse", то repeatCount задає "пів кадри", починаючи з 0:
+ 0 - в один бік (і різко назад)
+ 1 - туди (плавно) назад (плавно)
+ 2 - туди (плавно) назад (плавно) туди (плавно) назад (різко)
+ 3 - два плавні програші
+
+якщо android:repeatMode="restart", то repeatCount задає кількість
+програшів (+1 - відлік з нуля), але кожен програш різко повертається
+у вихідну позицію
+
+repeatCount - скільки разів додається duration
+-->

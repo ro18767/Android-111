@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scale xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromXScale="1"
+    android:fromYScale="1"
+    android:toXScale="1.5"
+    android:toYScale="1.5"
+    android:duration="800"
+
+    />
+<!--
+Демонструє проблему з поверненням до вихідного стану:
+плавне зростання у 1.5 рази, а потім різке повернення
+до 1
+-->

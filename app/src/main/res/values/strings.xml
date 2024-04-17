@@ -7,6 +7,7 @@
     <string name="main_game_button">Свайпи. Гра</string>
     <string name="main_rates_button">Інтернет. Курси валют</string>
     <string name="main_chat_button">Обмін даними. Чат</string>
+    <string name="main_anim_button">Анімації</string>
 
     <!-- region CALC ACTIVITY -->
     <string name="calc_page_title">Калькулятор</string>
