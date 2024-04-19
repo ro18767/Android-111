@@ -30,11 +30,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/main_tv_title"
-        app:layout_constraintVertical_bias="0.1" />
+        app:layout_constraintVertical_bias="0.2" />
 
     <Button
         android:id="@+id/main_button_calc"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="80dp"
         android:layout_height="wrap_content"
         android:background="@drawable/main_btn_shape"
         android:text="@string/main_calc_button"
@@ -45,9 +46,11 @@
         app:layout_constraintTop_toBottomOf="@+id/main_tv_title"
         app:layout_constraintVertical_bias="0.3" />
 
+
     <Button
         android:id="@+id/main_button_game"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="80dp"
         android:layout_height="wrap_content"
         android:background="@drawable/main_btn_shape"
         android:text="@string/main_game_button"
@@ -56,7 +59,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/main_tv_title"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintVertical_bias="0.4" />
 
     <Button
         android:id="@+id/main_button_rates"
@@ -70,7 +73,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/main_tv_title"
-        app:layout_constraintVertical_bias="0.7" />
+        app:layout_constraintVertical_bias="0.5" />
 
     <Button
         android:id="@+id/main_button_chat"
@@ -84,6 +87,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/main_tv_title"
-        app:layout_constraintVertical_bias="0.9" />
+        app:layout_constraintVertical_bias="0.6" />
+
+    <Button
+        android:id="@+id/main_button_anim"
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="80dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/main_btn_shape"
+        android:text="@string/main_anim_button"
+        app:backgroundTint="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/main_tv_title"
+        app:layout_constraintVertical_bias="0.7"  />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

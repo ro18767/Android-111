@@ -41,4 +41,7 @@
     <color name="game_snake">#1D9519</color>
     <color name="game_food">#CC5430</color>
 
+    <!-- CHAT -->
+    <color name="chat_background_own">#C8DCDA</color>
+    <color name="chat_background_other">#EFE694</color>
 </resources>
