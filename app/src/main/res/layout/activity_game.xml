@@ -50,7 +50,8 @@
             android:layout_weight="1"
             android:layout_height="match_parent"
             android:src="@drawable/snake"
-            android:contentDescription="@string/main_game_button" />
+            android:contentDescription="@string/main_game_button"
+            />
         <LinearLayout
             android:layout_width="0dp"
             android:layout_weight="1"
