@@ -41,7 +41,7 @@ public class AnimActivity extends AppCompatActivity {
         scale1Animation.reset();
         scale2Animation = AnimationUtils.loadAnimation(this, R.anim.anim_scale2);
         scale2Animation.reset();
-        translateAnimation = AnimationUtils.loadAnimation(this, R.anim.anim_translate);
+        translateAnimation = AnimationUtils.loadAnimation(this, R.anim.anim_scale33);
         translateAnimation.reset();
 
         findViewById(R.id.anim_alpha_view).setOnClickListener(this::alphaClicked);

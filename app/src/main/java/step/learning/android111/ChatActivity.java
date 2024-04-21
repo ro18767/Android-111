@@ -1,12 +1,19 @@
 package step.learning.android111;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -54,58 +61,120 @@ public class ChatActivity extends AppCompatActivity {
     private MediaPlayer incomingMessage;
     private String author = null;
 
+    private Animation rotateAnimation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_chat);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        // ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        //     Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+        //     v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+        //     return insets;
+        // });
         // new Thread(this::loadChatMessages).start();
         handler.post(this::timer);
-        messagesContainer = findViewById( R.id.chat_messages_container );
-        messagesScroller = findViewById( R.id.chat_messages_scroller ) ;
-        findViewById(R.id.chat_btn_send).setOnClickListener( this::sendMessageClick );
-        etAuthor = findViewById( R.id.chat_et_name );
-        etMessage = findViewById( R.id.chat_et_message );
+        messagesContainer = findViewById(R.id.chat_messages_container);
+        messagesScroller = findViewById(R.id.chat_messages_scroller);
+        findViewById(R.id.chat_btn_send).setOnClickListener(this::sendMessageClick);
+        etAuthor = findViewById(R.id.chat_et_name);
+        etMessage = findViewById(R.id.chat_et_message);
         bgOwn = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.chat_bg_own);
         bgOther = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.chat_bg_other);
         incomingMessage = MediaPlayer.create(this, R.raw.income);
         // incomingMessage.start();
+
+
+        rotateAnimation = AnimationUtils.loadAnimation(this, R.anim.anim_rotate_bell);
+        rotateAnimation.reset();
+
+
+        findViewById(R.id.chat_messages_scroller).setOnTouchListener(this::hideKeyboardOnTouc);
+
+        tryRestoreAuthor();
+    }
+
+    private boolean hideKeyboardOnTouc(View view, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            return view.performClick();
+        } else {
+            hideSoftwareKeyboard();
+        }
+        return true;
+    }
+
+
+    private void hideSoftwareKeyboard() {
+
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            view.clearFocus();
+        }
+    }
+
+    private void tryRestoreAuthor() {
+        try (SQLiteDatabase db = openOrCreateDatabase("auth_db", MODE_PRIVATE, null);) {
+
+            db.execSQL("CREATE TABLE IF NOT EXISTS auth_stat(id ROWID,dtt DATETIME DEFAULT CURRENT_TIMESTAMP, author VARCHAR(64))");
+            try (Cursor resultSet = db.rawQuery("SELECT * FROM auth_stat ORDER BY dtt DESC", null);) {
+                if (resultSet.moveToFirst()) {
+                    etAuthor.setText(resultSet.getString(2)); // счет от нуля
+                }
+
+            }
+
+        }
+
+    }
+
+    private void saveLastAuthor() {
+        try (SQLiteDatabase db = openOrCreateDatabase("auth_db", MODE_PRIVATE, null);) {
+
+            db.execSQL("INSERT INTO auth_stat(author) VALUES(?)", new Object[]{
+                    etAuthor.getText().toString()
+            });
+
+        }
+
     }
 
     private void timer() {
-        try { pool.submit(this::loadChatMessages); }
-        catch (Exception ignored) { }
+        try {
+            pool.submit(this::loadChatMessages);
+        } catch (Exception ignored) {
+        }
         handler.postDelayed(this::timer, 3000);
     }
+
     private void loadChatMessages() {
         List<ChatMessage> messages = new ArrayList<>();
         try {
-            JSONObject jsonObject = new JSONObject( Http.getString( CHAT_URL ) );
-            if( jsonObject.getInt("status" ) == 1 ) {
+            JSONObject jsonObject = new JSONObject(Http.getString(CHAT_URL));
+            if (jsonObject.getInt("status") == 1) {
                 JSONArray jsonArray = jsonObject.getJSONArray("data");
                 for (int i = 0; i < jsonArray.length(); i++) {
-                    messages.add( ChatMessage.fromJson( jsonArray.getJSONObject(i) ) ) ;
+                    messages.add(ChatMessage.fromJson(jsonArray.getJSONObject(i)));
                 }
             }
+        } catch (Exception ignore) {
         }
-        catch (Exception ignore) {}
-        messages.sort( Comparator.comparing( ChatMessage::getMoment ) );
+        messages.sort(Comparator.comparing(ChatMessage::getMoment));
         boolean needUpdate = false;
-        for(ChatMessage message : messages) {
-            if(chatMessages.stream().noneMatch( m -> m.getId().equals( message.getId() )) ) {
+        for (ChatMessage message : messages) {
+            if (chatMessages.stream().noneMatch(m -> m.getId().equals(message.getId()))) {
                 // нове повідомлення
-                chatMessages.add( message ) ;
+                chatMessages.add(message);
                 needUpdate = true;
+
+                runOnUiThread(this::rotateBell);
             }
         }
-        if( needUpdate ) {
+        if (needUpdate) {
             // запуск перерисовування колекції повідомлень
-            runOnUiThread( this::updateMessagesView );
+            runOnUiThread(this::updateMessagesView);
         }
     }
 
@@ -114,16 +183,16 @@ public class ChatActivity extends AppCompatActivity {
         String author = etAuthor.getText().toString();
         boolean needSound = false;
         boolean isFirst = messagesContainer.getChildCount() == 0;
-        for( ChatMessage message : chatMessages ) {
-            if( message.getTag() == null ) {  // відсутність тегу - нове / ще не представлено
-                boolean isOwn = author.equals( message.getAuthor() ) ;
-                needSound |=! isOwn;  // needSound = needSound || ! isOwn;
+        for (ChatMessage message : chatMessages) {
+            if (message.getTag() == null) {  // відсутність тегу - нове / ще не представлено
+                boolean isOwn = author.equals(message.getAuthor());
+                needSound |= !isOwn;  // needSound = needSound || ! isOwn;
                 View view = messageView(message, isOwn);
                 messagesContainer.addView(view);
                 message.setTag(view);   // як тег ставимо посилання на View даного повідомлення
             }
         }
-        if(needSound && !isFirst) {
+        if (needSound && !isFirst) {
             incomingMessage.start();
         }
         // Прокрутка scroll view: формування контенту (відображення) відбувається
@@ -133,32 +202,27 @@ public class ChatActivity extends AppCompatActivity {
         // прокрутку до того місця, яке встигло прорисуватись. Дуже імовірно, що
         // це не буде повним контентом.
         // Такі команди подаються через канал повідомлень (подійний цикл)
-        messagesScroller.post( () -> messagesScroller.fullScroll( View.FOCUS_DOWN ) ) ;
+        messagesScroller.post(() -> messagesScroller.fullScroll(View.FOCUS_DOWN));
     }
 
     private View messageView(ChatMessage message, boolean isOwn) {
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         layoutParams.gravity = isOwn ? Gravity.END : Gravity.START;
         layoutParams.setMargins(10, 15, 10, 15);
 
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setLayoutParams(layoutParams);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
-        linearLayout.setBackground( isOwn ? bgOwn : bgOther );
+        linearLayout.setBackground(isOwn ? bgOwn : bgOther);
         linearLayout.setPadding(15, 5, 15, 5);
 
         TextView textView = new TextView(this);
-        textView.setText( getString(
-                R.string.chat_message_line1,
-                datetimeFormat.format( message.getMoment() ),
-                message.getAuthor() ) );
-        linearLayout.addView( textView ) ;
+        textView.setText(getString(R.string.chat_message_line1, datetimeFormat.format(message.getMoment()), message.getAuthor()));
+        linearLayout.addView(textView);
         textView = new TextView(this);
-        textView.setText( message.getText() ) ;
-        linearLayout.addView( textView );
-        return linearLayout ;
+        textView.setText(message.getText());
+        linearLayout.addView(textView);
+        return linearLayout;
         /*
         12:34 Author
         Text of the message
@@ -166,27 +230,27 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void sendMessageClick(View view) {
-        if(author == null) {  // перше надсилання - зберігаємо дані про автора та блокуємо зміни
+        if (author == null) {  // перше надсилання - зберігаємо дані про автора та блокуємо зміни
             author = etAuthor.getText().toString();
-            if(author.isEmpty()) {
+            if (author.isEmpty()) {
                 Toast.makeText(this, R.string.chat_no_author_alert, Toast.LENGTH_SHORT).show();
                 author = null;
                 return;
-            }
-            else {
+            } else {
                 etAuthor.setEnabled(false);
+                saveLastAuthor();
             }
         }
         String msg = etMessage.getText().toString();
-        if(msg.isEmpty()) {
+        if (msg.isEmpty()) {
             Toast.makeText(this, R.string.chat_no_message_alert, Toast.LENGTH_SHORT).show();
             return;
         }
         ChatMessage message = new ChatMessage();
-        message.setAuthor( author );
-        message.setText( msg );
+        message.setAuthor(author);
+        message.setText(msg);
 
-        new Thread( () -> sendChatMessage(message) ).start();
+        new Thread(() -> sendChatMessage(message)).start();
 
     }
 
@@ -204,46 +268,45 @@ public class ChatActivity extends AppCompatActivity {
             // 1. Відкриваємо та налаштовуємо з'єднання
             URL url = new URL(CHAT_URL);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoOutput( true );  // запит матиме тіло (у запит можна виводити)
-            connection.setDoInput( true );   // очікується відповідь (читання рез-тів запиту)
-            connection.setRequestMethod( "POST" );
+            connection.setDoOutput(true);  // запит матиме тіло (у запит можна виводити)
+            connection.setDoInput(true);   // очікується відповідь (читання рез-тів запиту)
+            connection.setRequestMethod("POST");
             // заголовки проходять як RequestProperty
-            connection.setRequestProperty( "Accept", "application/json" );
-            connection.setRequestProperty( "Connection", "close" );
-            connection.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded" );
-            connection.setChunkedStreamingMode( 0 );   // не ділити на чанки - на частини
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("Connection", "close");
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            connection.setChunkedStreamingMode(0);   // не ділити на чанки - на частини
 
             // 2. Output - запис тіла
             OutputStream connectionOutput = connection.getOutputStream();
             String body = String.format("author=%s&msg=%s",   // "author=The Author&msg=Text of message"
-                    URLEncoder.encode( message.getAuthor(), StandardCharsets.UTF_8.name() ), // The%20Author
-                    URLEncoder.encode( message.getText(), StandardCharsets.UTF_8.name() )  // Text%20of%20message
+                    URLEncoder.encode(message.getAuthor(), StandardCharsets.UTF_8.name()), // The%20Author
+                    URLEncoder.encode(message.getText(), StandardCharsets.UTF_8.name())  // Text%20of%20message
             );
-            connectionOutput.write( body.getBytes( StandardCharsets.UTF_8 ) );
+            connectionOutput.write(body.getBytes(StandardCharsets.UTF_8));
             connectionOutput.flush();  // надсилаємо дані
             connectionOutput.close();  // або try(res) або не забути закрити
 
             // 3. Одержання відповіді
             int statusCode = connection.getResponseCode();
-            if( statusCode == 201 ) {  // успішно доставлено (тіла немає)
+            if (statusCode == 201) {  // успішно доставлено (тіла немає)
                 loadChatMessages();    // запускаємо зчитування та оновлення чату
-                runOnUiThread( () -> {
+                runOnUiThread(() -> {
                     Toast.makeText(this, "Sent", Toast.LENGTH_SHORT).show();
                     etMessage.setText("");
+                    rotateBell();
                 });
-            }
-            else {  // помилка, деталі у тілі
+            } else {  // помилка, деталі у тілі
                 InputStream connectionInput = connection.getErrorStream();
-                body = Http.readStream( connectionInput ) ;
-                Log.e("sendChatMessage", "statusCode: " + statusCode + " body: " + body );
+                body = Http.readStream(connectionInput);
+                Log.e("sendChatMessage", "statusCode: " + statusCode + " body: " + body);
                 connectionInput.close();
             }
 
             // 4. Закриваємо з'єднання
             connection.disconnect();
-        }
-        catch (Exception ex) {
-            Log.e("sendChatMessage", "ex: " + ex.getClass().getName() + " " + ex.getMessage() );
+        } catch (Exception ex) {
+            Log.e("sendChatMessage", "ex: " + ex.getClass().getName() + " " + ex.getMessage());
         }
     }
 
@@ -252,6 +315,10 @@ public class ChatActivity extends AppCompatActivity {
         handler.removeCallbacksAndMessages(null);
         pool.shutdownNow();
         super.onDestroy();
+    }
+
+    private void rotateBell() {
+        findViewById(R.id.chat_bell).startAnimation(rotateAnimation);
     }
 }
 /*
